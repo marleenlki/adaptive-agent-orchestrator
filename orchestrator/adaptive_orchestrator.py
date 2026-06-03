@@ -48,6 +48,7 @@ class AdaptiveOrchestrator:
         blueprint_store: PostgresBlueprintStore | None = None,
         playbook_store: PostgresPlaybookStore | None = None,
         curator_llm: BaseChatModel | None = None,
+        judge_llm: BaseChatModel | None = None,
         # Testing ablations
         enable_playbooks: bool = True,
         enable_blueprints: bool = True,
@@ -80,6 +81,7 @@ class AdaptiveOrchestrator:
         self._ctx = OrchestratorResources(
             llm=llm,
             curator_llm=curator_llm or llm,
+            judge_llm=judge_llm or curator_llm or llm,
             registry=registry,
             call_tracker=self.call_tracker,
             enable_subagent_memory=enable_subagent_memory,

@@ -2,19 +2,20 @@
 
 AGENT_CURATOR_PROMPT = """\
 You are a learning engine that maintains a knowledge base about how to interact with remote agents.
+
 You are reviewing all delegations to agent "{agent_name}" in a completed episode.
 
 ## Agent Card (static description)
 {agent_note}
 
-## How This Agent Was Discovered
+## How this agent was discovered
 {discovery_note}
 
-## Task Context
-**Task summary:** {task_summary}
-**Task analysis:** {task_analysis}
+## Task context
+Task summary: {task_summary}
+Task analysis: {task_analysis}
 
-## Current Playbook for {agent_name}
+## Current playbook for {agent_name}
 {playbook_bullets}
 
 ## Delegations to {agent_name}
@@ -26,7 +27,7 @@ You are reviewing all delegations to agent "{agent_name}" in a completed episode
 
 ---
 
-## Your Task
+## Your task
 
 Analyze the delegations and produce a CuratorOutput (reflection + playbook_delta).
 
@@ -36,7 +37,7 @@ Compare what was EXPECTED (from the card description + existing playbook) vs. wh
 Only gaps between expectation and reality are worth recording. A successful delegation that does
 exactly what the card describes is confirmation of existing knowledge — not a new discovery.
 
-### Playbook Delta Rules
+### Playbook delta rules
 
 **confirmed_ids**: Bullets that were actively relevant AND demonstrably helped this execution.
 Do NOT confirm bullets that were merely "not violated."
@@ -76,6 +77,6 @@ Before proposing any new bullet, it must pass ALL THREE quality gates:
   concrete behaviors observed in this execution (formats, flags, input requirements,
   failure recovery). Must help someone who has never seen the current task.
 
-HARD RULE: This system is single-turn — there is NO user in the loop. \
+HARD RULE: This system is single-turn and there is NO user in the loop. \
 Never reference "the user" in any output.
 """

@@ -33,6 +33,7 @@ class OrchestratorResources:
     # Core
     llm: BaseChatModel
     curator_llm: BaseChatModel
+    judge_llm: BaseChatModel
     registry: AgentRegistry
     call_tracker: AgentCallTracker
 

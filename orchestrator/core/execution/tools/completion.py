@@ -136,7 +136,7 @@ def make_task_complete(session: "OrchestratorSession"):
 
         try:
             decision = _evaluate_answer(
-                llm=ctx.curator_llm,
+                llm=ctx.judge_llm,
                 task=session.task,
                 answer=candidate,
                 trajectory=_judge_trajectory(session.history, session.timeline),

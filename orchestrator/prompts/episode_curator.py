@@ -3,6 +3,7 @@
 _EPISODE_CONTEXT_BLOCK = """\
 ## Episode Summary
 Task: {task}
+Outcome: succeeded
 Total delegations: {total_delegations}
 
 ## Available Agents
@@ -66,7 +67,7 @@ handoffs, no retries?
 If no blueprint was retrieved, analyze the execution on its own \
 merits.
 
-HARD RULE: This system is single-turn — there is NO user in the loop. \
+HARD RULE: This system is single-turn and there is NO user in the loop. \
 Never mention "the user", "ask the user", "prompt the user", or \
 "clarify with the user" in blueprints or anywhere else. \
 The executor receives a task and must solve it autonomously.

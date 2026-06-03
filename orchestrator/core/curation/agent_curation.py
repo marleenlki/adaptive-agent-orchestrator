@@ -51,7 +51,7 @@ def run_agent_curation(
     """
     agent_records = [r for r in session.history if r.agent == agent_name]
 
-    # How often each delegation has been seen before 
+    # How often each delegation has been seen before
     familiarity = [
         episode_store.count_similar_steps(agent_name, r.instruction) if episode_store else 0
         for r in agent_records

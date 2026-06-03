@@ -51,45 +51,35 @@ class SuccessCuratorOutput(BaseModel):
 
 
 
-class ReflectionOutput(BaseModel):  
-    """Chain-of-thought analysis of step execution.  
-  
-    Single freetext field, which exists so the LLM reasons analytically  
-    before making playbook delta decisions. Not persisted as  
-    structured data on the PlanStep.  
-    """  
-  
-    analysis: str = Field(  
-        description=(  
-            "Before making playbook decisions, analyze the execution:\n"  
-            "- What was attempted and what happened? Reference delegation numbers.\n"  
-            "- Compare expected vs actual output: this uncovers wrong assumptions and gaps in the orchestrator in its current knowledge about the agents. "  
-            "- What was unnecessary, what did the agent figure out alone?\n"  
-            "- What does this reveal about the agent's capabilities and needs?\n"  
-            "- Was the instruction too vague (agent guessed wrong) or "  
-            "too detailed (agent ignored parts)?\n"  
-            "Be specific: name commands, tools, flags, formats, behaviors.\n"  
-            "This is your reasoning space, so be thorough."  
-        ),  
+class ReflectionOutput(BaseModel):
+    """Analysis that precedes playbook delta decisions."""
+
+    analysis: str = Field(
+        description=(
+            "Before making playbook decisions, analyze the execution:\n"
+            "- What was attempted and what happened? Reference delegation numbers.\n"
+            "- Compare expected vs. actual output.\n"
+            "- What was unnecessary? What did the agent figure out alone?\n"
+            "- What does this reveal about the agent's capabilities and needs?\n"
+            "- Was the instruction too vague or too detailed?\n"
+            "Be specific: name commands, tools, flags, formats, and behaviors."
+        ),
     )
 
-class CuratorOutput(BaseModel):  
-    """Combined reflector + curator output in one. 
-  
-    Field order matters: reflection before playbook_delta forces the LLM  
-    to reason analytically before making structural curation decisions.  
-    """  
-  
-    reflection: ReflectionOutput = Field(  
-        description=(  
-            "Structured analysis of the execution. Reflect on what you observe of the agents' behavior and compare with what we know complete this "  
-            "BEFORE the playbook delta."  
-        ),  
-    )  
-    playbook_delta: PlaybookDeltaOutput = Field(  
-        default_factory=PlaybookDeltaOutput,  
-        description=(  
-            "Incremental changes to the agent's playbook, informed "  
-            "by your reflection above."  
-        ),  
-    )  
+
+class CuratorOutput(BaseModel):
+    """Combined reflection and playbook update output."""
+
+    reflection: ReflectionOutput = Field(
+        description=(
+            "Analyze the agent's observed behavior before making any playbook "
+            "delta decisions."
+        ),
+    )
+    playbook_delta: PlaybookDeltaOutput = Field(
+        default_factory=PlaybookDeltaOutput,
+        description=(
+            "Incremental playbook changes grounded in the reflection above. "
+            "Return empty lists when nothing transferable was learned."
+        ),
+    )
