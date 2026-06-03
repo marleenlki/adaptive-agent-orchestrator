@@ -8,14 +8,18 @@ Architecture:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field, SkipValidation
 
-from orchestrator.core.resources import OrchestratorResources
 from orchestrator.shared.constants import StepStatus
 from orchestrator.instrumentation.metrics import EpisodeMetrics
 from orchestrator.instrumentation.trajectory import DelegationExchange
+
+if TYPE_CHECKING:
+    from orchestrator.core.resources import OrchestratorResources
+else:
+    OrchestratorResources = Any
 
 
 class AgentContext(BaseModel):
