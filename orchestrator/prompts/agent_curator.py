@@ -34,34 +34,33 @@ Analyze the delegations and produce a CuratorOutput (reflection + playbook_delta
 ### Reflection
 
 Compare what was EXPECTED (from the card description + existing playbook) vs. what ACTUALLY happened.
-Only gaps between expectation and reality are worth recording. A successful delegation that does
-exactly what the card describes is confirmation of existing knowledge — not a new discovery.
+Capture every learning the delegations reveal — both confirmations of existing bullets and genuinely
+new behavior. A delegation that simply repeats what the card already states confirms existing
+knowledge; anything beyond that (capabilities, limitations, strategies not yet explicit) is worth recording.
 
 ### Playbook delta rules
 
-**confirmed_ids**: Bullets that were actively relevant AND demonstrably helped this execution.
-Do NOT confirm bullets that were merely "not violated."
+**confirmed_ids**: Bullets that were relevant to this execution and that the agent's behavior
+matched or relied on. When a bullet clearly applied and held true, confirm it.
 
 **contradicted_ids**: Bullets that this execution disproves or that gave harmful guidance.
 Be strict — actively unlearn incorrect assumptions.
 
-**new_bullets**: 0–2 per novel step. An empty list is the CORRECT output when nothing
-transferable was learned. Most executions confirm existing knowledge rather than creating new bullets.
+**new_bullets**: 0-2 per novel step. Whenever a delegation reveals a transferable capability,
+limitation, or strategy that is not yet in the playbook, add it. Return an empty list only when
+the delegations genuinely revealed nothing beyond what the playbook already captures.
 
-Before proposing any new bullet, it must pass ALL THREE quality gates:
+Use these quality checks to sharpen a bullet's wording:
 
-1. **Counterfactual gate**: If this bullet had existed BEFORE this episode, would it have
-   changed any delegation decision or instruction wording? Consider the capabilities that
-   were actually searched — would this bullet have changed how this agent was discovered
-   or ranked? If no → discard.
+1. **Counterfactual check**: A strong bullet would have changed a delegation decision or
+   instruction wording had it existed before this episode. Consider the capabilities that were
+   actually searched — would it have changed how this agent was discovered or ranked?
 
-2. **Discriminative gate**: Could this bullet plausibly match tasks intended for a DIFFERENT
-   agent in the system? Consider the task summary above — a good bullet helps identify
-   THIS agent uniquely for tasks like this one, not any agent that processes text.
-   If yes → too generic, discard.
+2. **Discriminative check**: A strong bullet helps identify THIS agent uniquely. Prefer wording
+   that matches tasks like this one but NOT tasks meant for a different agent that processes text.
 
-3. **Additive gate**: Does this bullet add information BEYOND what the card description
-   already communicates? If the card already implies this capability → discard.
+3. **Additive check**: A strong bullet adds information beyond what the card already states.
+   If the card already implies the capability, confirm the existing knowledge instead of duplicating it.
 
 ### Section Guidelines
 
