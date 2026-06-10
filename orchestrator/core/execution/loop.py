@@ -10,9 +10,7 @@ import logging
 from langgraph.errors import GraphRecursionError
 
 from orchestrator.core.execution.graph import build_executor_agent
-from orchestrator.prompts.executor import (
-    EXECUTOR_PROMPT,
-)
+from orchestrator.prompts.executor import EXECUTOR_PROMPT
 from orchestrator.core.session_types import OrchestratorSession
 from orchestrator.core.execution.tools.build import build_tools
 from orchestrator.shared.constants import RECURSION_LIMIT

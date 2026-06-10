@@ -21,8 +21,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_AGENT_NOT_FOUND = "Error: Agent '{}' not found."
-
 
 def make_delegate(session: "OrchestratorSession"):
     """Build the delegate tool closed over *session*."""
@@ -45,10 +43,9 @@ def make_delegate(session: "OrchestratorSession"):
             reasoning: WHY this agent with this instruction. Stored for learning.
             cited_bullets: Comma-separated playbook bullet IDs that motivated this delegation (e.g. 'agent-1,agent-3').
         """
-
         connection = registry.get_connection(agent)
         if connection is None:
-            return f"{_AGENT_NOT_FOUND.format(agent)}"
+            return f"Error: Agent '{agent}' not found."
 
         logger.info(
             "[delegate] agent=%s instruction=%s",
@@ -68,24 +65,18 @@ def make_delegate(session: "OrchestratorSession"):
             output = f"{STEP_FAILED_PREFIX}: Agent delegation error: {type(exc).__name__}: {exc}"
             logger.error("[delegate] Delegation crashed for %s: %s", agent, exc, exc_info=True)
 
-        is_failure = output.startswith(STEP_FAILED_PREFIX)
-
-        bullet_ids = [b.strip() for b in cited_bullets.split(",") if b.strip()] if cited_bullets else []
-
         session.timeline.append(DelegationExchange(
             step_number=len(session.history) + 1,
             agent=agent,
             instruction=instruction,
             actual_output=output,
             reasoning=reasoning,
-            success=not is_failure,
+            success=not output.startswith(STEP_FAILED_PREFIX),
             feedback="",
-            cited_bullets=bullet_ids,
+            cited_bullets=[b.strip() for b in cited_bullets.split(",") if b.strip()],
         ))
 
-        result = f"{output}"
-
-        return result
+        return output
 
     return delegate
 
@@ -100,8 +91,7 @@ def _send_to_agent(
     enable_subagent_memory: bool = True,
     source: str = ORCHESTRATOR_DELEGATION_SOURCE,
 ) -> str:
-    """Send a message to an agent and return its response.
-    """
+    """Send a message to an agent and return its response."""
     try:
         if enable_subagent_memory:
             agent_tid = f"{thread_id}::agent::{agent_name}"

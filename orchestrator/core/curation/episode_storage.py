@@ -54,7 +54,7 @@ def store_episode_result(
 ) -> None:
     """Persist the episode result: stored episode (on success) and blueprint."""
     if success and episode_store is not None:
-        store_episode_memory(episode_store, session) # only successful episodes are stored in memory 
+        store_episode_memory(episode_store, session) # only successful episodes are stored in memory
 
     if blueprint_store is None:
         return

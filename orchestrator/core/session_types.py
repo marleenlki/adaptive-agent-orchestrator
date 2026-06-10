@@ -76,7 +76,6 @@ class PlanContext(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
-
 class PlanStep(BaseModel):
     """One step in the execution plan — a scratchpad for the orchestrator's thinking.
 
@@ -100,7 +99,8 @@ class Plan(BaseModel):
         description=(
             "The overall goal the plan aims to achieve. Incorporate constraints from "
             "planning context, scope from retrieved blueprints, and capabilities of "
-            "available agents. Do NOT add specifics about the task that you have not observed or is not grounded — keep unverified aspects generic."
+            "available agents. Do NOT add specifics about the task that you have not "
+            "observed or that are not grounded — keep unverified aspects generic."
         ),
     )
     deliverables: list[str] = Field(
@@ -125,8 +125,6 @@ class ToolCallRecord(BaseModel):
     tool_name: str = Field(description="Name of the tool called.")
     tool_input: str = Field(default="", description="Summary of the arguments.")
     tool_output: str = Field(default="", description="Summary of the result.")
-
-
 
 
 class JudgeDecision(BaseModel):

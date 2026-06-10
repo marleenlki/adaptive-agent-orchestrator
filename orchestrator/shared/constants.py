@@ -69,7 +69,7 @@ MEMORY_SEARCH_MIN_SIMILARITY = 0.75
 # Memory — blueprints (delegation chains)
 
 BLUEPRINT_HARM_THRESHOLD = 2
-"""Auto-prune threshold for blueprints"""
+"""Auto-prune threshold: a blueprint with this many contradictions is removed."""
 
 BLUEPRINT_CONFIRMATION_CAP = 5
 """Maximum n_confirmed for a blueprint."""
@@ -92,7 +92,6 @@ PLAYBOOK_MERGE_SIMILARITY = 0.9
 
 PROFILING_N_QUERIES = 20
 """Number of test queries generated per agent during profiling."""
-
 
 PROFILING_MAX_BULLETS = 3
 """Maximum capability bullets generated per agent during profiling."""

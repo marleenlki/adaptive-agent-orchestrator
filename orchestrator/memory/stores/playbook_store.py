@@ -28,7 +28,7 @@ _SECTION_LABELS = {
     "strategy": "Rules & Strategies",
     "limitation": "Limitations",
 }
-SECTIONS: list[str] = ["capability", "strategy", "limitation"]
+SECTIONS: list[str] = list(_SECTION_LABELS)
 
 # Stable ordering shared by every query that maps bullets to positional
 # display IDs (agent-1, agent-2, …). The rendering query and the
@@ -137,9 +137,7 @@ class PostgresPlaybookStore(BaseStore):
             )
             return [(row[0], float(row[1]), int(row[2])) for row in cur.fetchall()]
 
-    # Write
-
-    # -- profiling helpers ---------------------------------------------
+    # Profiling
 
     def is_profiled(self, agent: str) -> bool:
         """Check whether an agent has a profiling record."""
@@ -179,40 +177,27 @@ class PostgresPlaybookStore(BaseStore):
             )
             conn.commit()
 
-    def insert_profiled_bullets(
-        self, agent: str, rules: list[str],
-    ) -> int:
+    def insert_profiled_bullets(self, agent: str, rules: list[str]) -> int:
         """Insert profiled capability bullets with ``n_confirmed = 0``.
 
         Profiled bullets are hypotheses generated from card analysis,
         not from observed behaviour.  Setting ``n_confirmed = 0``
         distinguishes them from observation-backed bullets (≥ 1).
-
-        Deduplicates against existing bullets.  Returns the number of
-        bullets actually inserted.
         """
+        rules = [r.strip() for r in rules if r.strip()]
         if not rules:
             return 0
 
         with self._pool.connection() as conn, conn.cursor() as cur:
-            existing_embs = self._load_existing_embeddings(cur, agent)
-            inserted = 0
             for rule in rules:
-                rule = rule.strip()
-                if not rule:
-                    continue
-                if self._insert_bullet_if_new(
-                    cur, agent, "capability", rule, n_confirmed=0,
-                    existing_embs=existing_embs,
-                ):
-                    inserted += 1
+                self._insert_bullet(cur, agent, "capability", rule, n_confirmed=0)
             conn.commit()
 
         logger.info(
             "[pg_playbook] Profiled %d capability bullets for '%s'",
-            inserted, agent,
+            len(rules), agent,
         )
-        return inserted
+        return len(rules)
 
     def apply_delta(self, agent: str, delta: PlaybookDeltaOutput) -> None:
         """Apply incremental changes to an agent's playbook."""
@@ -220,17 +205,16 @@ class PostgresPlaybookStore(BaseStore):
             # Fetch current bullets (ordered) to map stable display IDs.
             cur.execute(
                 f"""
-                SELECT id, section, embedding, rule
+                SELECT id
                 FROM agent_playbook
                 WHERE agent = %s
                 {_BULLET_ORDER_BY}
                 """,
                 (agent,),
             )
-            rows = cur.fetchall()
             id_map = {
                 _bullet_display_id(agent, idx): row[0]
-                for idx, row in enumerate(rows, start=1)
+                for idx, row in enumerate(cur.fetchall(), start=1)
             }
 
             # Confirm (capped to prevent irremovable bullets)
@@ -264,27 +248,17 @@ class PostgresPlaybookStore(BaseStore):
                             row_id,
                         )
 
-            # Add new (with dedup)
-            existing_embs = [
-                parse_embedding(emb_val)
-                for _, _, emb_val, _ in rows
-                if emb_val is not None
-            ]
+            # Add new
             for item in delta.new_bullets:
-                if not item.rule or item.section not in SECTIONS:
-                    continue
-                self._insert_bullet_if_new(
-                    cur, agent, item.section, item.rule,
-                    n_confirmed=1, existing_embs=existing_embs,
-                )
+                if item.rule and item.section in SECTIONS:
+                    self._insert_bullet(cur, agent, item.section, item.rule, n_confirmed=1)
 
             conn.commit()
 
     # Consolidation primitives (orchestrated by core.curation)
 
     def fetch_bullets_for_consolidation(self, agent: str) -> list[dict]:
-        """Return embedded bullets as dicts for clustering/merging.
-        """
+        """Return embedded bullets as dicts for clustering/merging."""
         with self._pool.connection() as conn, conn.cursor() as cur:
             cur.execute(
                 """
@@ -329,33 +303,13 @@ class PostgresPlaybookStore(BaseStore):
             )
             conn.commit()
 
-    # Private helpers
-
-    def _load_existing_embeddings(self, cur, agent: str) -> list[list[float]]:
-        """Fetch all stored embeddings for *agent* from the current cursor."""
-        cur.execute(
-            "SELECT embedding FROM agent_playbook "
-            "WHERE agent = %s AND embedding IS NOT NULL",
-            (agent,),
-        )
-        return [parse_embedding(emb) for (emb,) in cur.fetchall()]
-
-    def _insert_bullet_if_new(
-        self,
-        cur,
-        agent: str,
-        section: str,
-        rule: str,
-        *,
-        n_confirmed: int,
-        existing_embs: list[list[float]],
-    ) -> bool:
-        """Embed *rule*, dedup, then insert. Mutates *existing_embs*. Returns True if inserted."""
-        new_emb = embed_text(self._embedder, rule)
+    def _insert_bullet(
+        self, cur, agent: str, section: str, rule: str, *, n_confirmed: int,
+    ) -> None:
+        """Embed *rule* and insert it as a new bullet."""
+        emb = embed_text(self._embedder, rule)
         cur.execute(
             "INSERT INTO agent_playbook (agent, section, rule, n_confirmed, embedding) "
             "VALUES (%s, %s, %s, %s, %s::vector)",
-            (agent, section, rule, n_confirmed, vec_literal(new_emb)),
+            (agent, section, rule, n_confirmed, vec_literal(emb)),
         )
-        existing_embs.append(new_emb)
-        return True

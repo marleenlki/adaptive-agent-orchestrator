@@ -8,7 +8,7 @@ from a2a.types import AgentSkill
 @dataclass
 class AgentCard:
     """Metadata of an agent (name, description, skills). This is used for agent registry and discovery.
-    
+
     Attributes:
         name: The name of the agent.
         description: A brief description of the agent's capabilities.

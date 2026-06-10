@@ -1,5 +1,4 @@
-"""Shared data types for the memory.
-"""
+"""Shared data types for the memory stores."""
 
 from __future__ import annotations
 
@@ -37,7 +36,6 @@ class PlaybookBullet:
     n_contradicted: int = 0
     embedding: list[float] = field(default_factory=list)
     bullet_id: str = ""
-
 
 
 class TrajectoryStep(BaseModel):
@@ -97,8 +95,8 @@ class NewBullet(BaseModel):
             "work with this agent effectively. (≤35 words)\n\n"
 
             "STRATEGY — what to capture:\n"
-            "- Recovery patterns: How "
-            "to recover or prevent it\n"
+            "- Recovery patterns: How to recover from or prevent "
+            "an observed failure\n"
             "- Input requirements: What the agent needs in the "
             "instruction to succeed (format, context, specificity)\n"
             "- Interaction patterns: When to split tasks, what "
@@ -114,7 +112,7 @@ class NewBullet(BaseModel):
             "task's required capabilities. Write the bullet so that "
             "cosine similarity is HIGH for tasks that need this agent.\n"
             "- Use the vocabulary a task-description would use, not "
-            "internal tool names .\n"
+            "internal tool names.\n"
             "- Each capability should cover ONE distinct skill; do not "
             "combine unrelated abilities in one bullet.\n"
             "- Limitations are the inverse: they prevent the agent "
@@ -144,10 +142,11 @@ class PlaybookDeltaOutput(BaseModel):
     contradicted_ids: list[str] = Field(
         default_factory=list,
         description=(
-            "Bullet IDs from the current agents playbook that this execution "
+            "Bullet IDs from the current agent's playbook that this execution "
             "disproves. This means the agent behaved differently than the rule "
-            "predicts, or the advice was wrong. Consider all bullets that could be harmful even if not applied in this execution."
-            "It's important to be strict to actively unlearn incorrect assumptions about the agent. "
+            "predicts, or the advice was wrong. Consider all bullets that could "
+            "be harmful even if not applied in this execution. It's important to "
+            "be strict to actively unlearn incorrect assumptions about the agent."
         ),
     )
     new_bullets: list[NewBullet] = Field(
@@ -175,8 +174,6 @@ class MergedBullet(BaseModel):
     )
 
 
-
-
 # Delegation Blueprint types
 
 
@@ -195,7 +192,6 @@ class DelegationBlueprint:
     """An ideal, minimal agent chain for a task type."""
 
     steps: list[DelegationStep]
-
 
 
 @dataclass

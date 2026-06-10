@@ -56,7 +56,6 @@ def _render_plan(plan_store: "AdaptivePlanStore") -> str:
 
 def make_planning_tools(session: "OrchestratorSession") -> list:
     """Build planning tools"""
-    ctx = session.ctx
     plan_store = session.plan_store
 
     @tool("create_plan")

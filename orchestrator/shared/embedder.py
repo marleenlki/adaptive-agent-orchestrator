@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import os
+
 import numpy as np
 from numpy.typing import NDArray
-import os
 from openai import AzureOpenAI
+
 
 class Embedder:
     """Embedding via Azure OpenAI text-embedding-ada-002."""

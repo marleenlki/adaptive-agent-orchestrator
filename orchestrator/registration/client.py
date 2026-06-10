@@ -1,4 +1,4 @@
-"""Agent client to connect to Agents"""
+"""Client wrapper around a registered agent's LangChain chain."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_response(result: Any) -> str:
-    """Extract text from a result."""
+    """Extract the response text from whatever a chain invocation returned."""
     if isinstance(result, dict) and "structured_response" in result:
         structured = result["structured_response"]
         if hasattr(structured, "final_answer"):
@@ -34,9 +34,7 @@ def extract_response(result: Any) -> str:
 
 
 class AgentClient:
-    """Client to connect to an agent via its LangChain chain.
-
-    Invokes the chain directly.
+    """Connects to an agent by invoking its LangChain chain directly.
 
     Attributes:
         card: Agent metadata (name, description, skills).
@@ -56,19 +54,7 @@ class AgentClient:
         card_embedding: list[float] | None = None,
         profiled_bullets: list[str] | None = None,
     ) -> AgentClient:
-        """Creates an agent connection.
-
-        Args:
-            name: The name of the agent.
-            description: The description of the agent.
-            chain: The LangChain chain/agent (runnable).
-            skills: Optional list of agent skills.
-            card_embedding: Pre-computed card embedding vector.
-            profiled_bullets: Pre-computed capability bullets.
-
-        Returns:
-            An initialized AgentClient.
-        """
+        """Build a client with an agent card from registration data."""
         card = AgentCard(
             name=name,
             description=description,
@@ -79,20 +65,10 @@ class AgentClient:
         logger.info("Agent '%s' created", name)
         return cls(card=card, chain=chain)
 
+    def send_message(self, text: str, thread_id: str | None = None) -> str:
+        """Send a message to the agent and return its response text.
 
-    def send_message(
-        self,
-        text: str,
-        thread_id: str | None = None,
-    ) -> str:
-        """Send a message to the agent.
-
-        Args:
-            text: The message text for the agent.
-            thread_id: Optional thread ID for conversation memory.
-
-        Returns:
-            The agent's response as a string.
+        ``thread_id`` enables the agent's own conversation memory.
         """
         invoke_input = {"messages": [{"role": "user", "content": text}]}
         config = {"configurable": {"thread_id": thread_id}} if thread_id else {}

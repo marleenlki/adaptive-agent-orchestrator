@@ -37,7 +37,7 @@ def finalize_episode(
 ) -> None:
     """Run the full post-episode finalization pipeline.
 
-    Called by the orchestrator after the executor loop is done
+    Called by the orchestrator after the executor loop is done.
     """
     ctx = session.ctx
     success = (
@@ -65,7 +65,6 @@ def finalize_episode(
     except Exception:
         logger.warning("[finalize_episode] Failed — non-critical", exc_info=True)
         populate_metrics(session, success)
-
 
 
 def _curate_agents(
@@ -126,7 +125,7 @@ def _curate_episode(
     )
     logger.info("[episode_familiarity] similar_episodes=%d", familiarity)
     metrics.record_episode_familiarity(familiarity)
-    
+
     # Judge-driven vote on the blueprint that drove this episode (if one did).
     # Fires on success, failure, and familiar-skip alike — it costs no LLM call.
     if session.retrieved_blueprint_id:

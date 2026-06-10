@@ -26,18 +26,10 @@ class AgentRegistry:
         card_embedding: list[float] | None = None,
         profiled_bullets: list[str] | None = None,
     ) -> dict[str, str]:
-        """Register an agent with name, description, and chain.
+        """Register an agent and return its name and description.
 
-        Args:
-            name: The name of the agent.
-            description: The description of the agent.
-            chain: The LangChain chain (runnable).
-            skills: Optional list of agent skills.
-            card_embedding: Pre-computed embedding of the card text.
-            profiled_bullets: Pre-computed capability bullets.
-
-        Returns:
-            A dict with the name and description of the registered agent.
+        ``card_embedding`` and ``profiled_bullets`` are optional pre-computed
+        values that skip runtime embedding and LLM profiling.
         """
         connection = AgentClient.create(
             name=name,
@@ -60,16 +52,13 @@ class AgentRegistry:
         result = []
         for connection in self._agents.values():
             card = connection.card
-            skills = []
-            if card.skills:
-                skills = [
-                    {"name": skill.name, "description": skill.description or ""}
-                    for skill in card.skills
-                ]
             entry: dict = {
                 "name": card.name,
                 "description": card.description or "",
-                "skills": skills,
+                "skills": [
+                    {"name": skill.name, "description": skill.description or ""}
+                    for skill in card.skills
+                ],
             }
             if card.card_embedding:
                 entry["card_embedding"] = card.card_embedding

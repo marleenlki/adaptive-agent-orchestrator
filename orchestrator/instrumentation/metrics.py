@@ -53,17 +53,19 @@ class EpisodeMetrics:
     episode_familiarity: int | None = None
 
     # Agent selection
-    executed_agents: list[str] = field(default_factory=list)   # agents actually delegated to (in order, deduped, excludes judge)
-    optimal_sequence: list[str] = field(default_factory=list)  # minimal necessary agents (from curator blueprint; empty if no curation)
+    # executed: agents actually delegated to (in order, deduped, excludes judge)
+    # optimal: minimal necessary agents from the curator blueprint (empty if no curation)
+    executed_agents: list[str] = field(default_factory=list)
+    optimal_sequence: list[str] = field(default_factory=list)
     capability_boosted_agents: int = 0  # agents whose score was boosted by capability bullets
 
-    # Agent discovery sources 
+    # Agent discovery sources
     agent_discovery_sources: dict[str, str] = field(default_factory=dict)
 
-    # Agent retrieval log 
+    # Agent retrieval log
     agent_retrieval_log: list[dict[str, Any]] = field(default_factory=list)
 
-    # Playbook memory evolution 
+    # Playbook memory evolution
     playbook_confirm_votes: int = 0
     playbook_contradict_votes: int = 0
     playbook_bullets_added: int = 0
@@ -114,10 +116,11 @@ class EpisodeMetrics:
                 (with keys input_tokens, output_tokens, total_tokens).
         """
         for model, usage in usage_metadata.items():
-            if isinstance(usage, dict):
-                inp, out, tot = usage.get("input_tokens", 0), usage.get("output_tokens", 0), usage.get("total_tokens", 0)
-            else:
-                inp, out, tot = getattr(usage, "input_tokens", 0), getattr(usage, "output_tokens", 0), getattr(usage, "total_tokens", 0)
+            if not isinstance(usage, dict):
+                usage = {k: getattr(usage, k, 0) for k in ("input_tokens", "output_tokens", "total_tokens")}
+            inp = usage.get("input_tokens", 0)
+            out = usage.get("output_tokens", 0)
+            tot = usage.get("total_tokens", 0)
             self.token_usage_by_model[model] = {
                 "input_tokens": inp,
                 "output_tokens": out,

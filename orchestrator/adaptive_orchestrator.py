@@ -15,7 +15,7 @@ from orchestrator.core.curation.pipeline import finalize_episode
 from orchestrator.core.resources import OrchestratorResources
 from orchestrator.core.session_types import OrchestratorSession
 from orchestrator.instrumentation.metrics import EpisodeMetrics
-from orchestrator.instrumentation.trajectory import AgentCallTracker
+from orchestrator.instrumentation.trajectory import AgentCallTracker, MessageRecord
 from orchestrator.registration.profiler import profile_agents
 from orchestrator.registration.registry import AgentRegistry
 from orchestrator.shared.constants import (
@@ -99,8 +99,7 @@ class AdaptiveOrchestrator:
         self.last_metrics: EpisodeMetrics | None = None
 
     def profile_agents(self) -> dict[str, list[str]]:
-        """Conduct zero-shot profiling of all registered agents and return the results.
-        """
+        """Conduct zero-shot profiling of all registered agents and return the results."""
         self.seed_profiled_bullets()
         results = profile_agents(
             registry=self.registry,
@@ -110,8 +109,7 @@ class AdaptiveOrchestrator:
         return {name: r.bullets for name, r in results.items()}
 
     def seed_profiled_bullets(self) -> dict[str, int]:
-        """Insert pre-computed bullets from the registry into the playbook store.
-        """
+        """Insert pre-computed bullets from the registry into the playbook store."""
         store = self._ctx.playbook_store
         if store is None:
             return {}
@@ -148,17 +146,15 @@ class AdaptiveOrchestrator:
             if self.trajectory_store is not None:
                 # Bookend the session timeline with the user task and the
                 # orchestrator's final answer (recorded on the tracker).
-                from orchestrator.instrumentation.trajectory import MessageRecord
                 messages = [
                     r for r in self.call_tracker.get_timeline()
                     if isinstance(r, MessageRecord)
                 ]
-                user_msgs = [m for m in messages if m.role == "user"]
-                orch_msgs = [m for m in messages if m.role == "orchestrator"]
-                merged = user_msgs[:1] + list(session.timeline) + orch_msgs[-1:]
+                user_msgs = [m for m in messages if m.role == "user"][:1]
+                orch_msgs = [m for m in messages if m.role == "orchestrator"][-1:]
                 self.trajectory_store.save(
                     task=task,
-                    timeline=merged,
+                    timeline=user_msgs + list(session.timeline) + orch_msgs,
                     final_response=answer,
                     episode_id=thread_id,
                 )

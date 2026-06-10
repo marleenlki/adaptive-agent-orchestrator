@@ -17,19 +17,21 @@ class AdaptivePlanStore:
         self._step_counter: int = 0
 
     def load_plan(self, plan: Plan) -> None:
-        """Load a plan"""
+        """Replace the plan, keeping already completed/failed steps."""
         completed = [s for s in self._steps if s.status in (StepStatus.DONE, StepStatus.FAILED)]
-        new_steps = list(plan.steps)
 
         self._steps = completed
-        for step in new_steps:
+        for step in plan.steps:
             step.step_id = self._next_step_id()
+            self._steps.append(step)
 
-        self._steps = completed + new_steps
         self.goal = plan.goal
         self.deliverables = list(plan.deliverables)
 
-        logger.info("Plan loaded: %d new steps (+%d completed preserved)", len(new_steps), len(completed))
+        logger.info(
+            "Plan loaded: %d new steps (+%d completed preserved)",
+            len(plan.steps), len(completed),
+        )
 
     @property
     def steps(self) -> list[PlanStep]:
@@ -38,6 +40,9 @@ class AdaptivePlanStore:
 
     def get_step(self, step_id: str) -> PlanStep | None:
         return next((s for s in self._steps if s.step_id == step_id), None)
+
+    def _index_of(self, step_id: str) -> int | None:
+        return next((i for i, s in enumerate(self._steps) if s.step_id == step_id), None)
 
     def _next_step_id(self) -> str:
         """Return the next unused id, skipping any already in the plan."""
@@ -54,7 +59,6 @@ class AdaptivePlanStore:
         return step
 
     def mark_step_done(self, step_id: str, comment: str = "") -> PlanStep:
-        """Mark a step done."""
         step = self._require_step(step_id)
         step.status = StepStatus.DONE
         if comment:
@@ -62,7 +66,6 @@ class AdaptivePlanStore:
         return step
 
     def mark_step_failed(self, step_id: str, comment: str = "") -> PlanStep:
-        """Mark a step failed."""
         step = self._require_step(step_id)
         step.status = StepStatus.FAILED
         if comment:
@@ -70,7 +73,6 @@ class AdaptivePlanStore:
         return step
 
     def mark_step_skipped(self, step_id: str) -> PlanStep:
-        """Mark a step skipped."""
         step = self._require_step(step_id)
         step.status = StepStatus.SKIPPED
         return step
@@ -86,8 +88,8 @@ class AdaptivePlanStore:
     ) -> PlanStep:
         """Append a new step or insert it relative to another step.
 
-        Raises ValueError if before_step_id or after_step_id is given
-        but not found in the current plan.
+        Raises ValueError if before_step_id is given but not found;
+        an unknown after_step_id falls back to appending.
         """
         new_step = PlanStep(
             step_id=self._next_step_id(),
@@ -98,22 +100,12 @@ class AdaptivePlanStore:
         )
 
         if before_step_id:
-            idx = next(
-                (i for i, s in enumerate(self._steps) if s.step_id == before_step_id),
-                None,
-            )
+            idx = self._index_of(before_step_id)
             if idx is None:
                 raise ValueError(f"before_step_id '{before_step_id}' not found in plan.")
             self._steps.insert(idx, new_step)
-        elif after_step_id:
-            idx = next(
-                (i for i, s in enumerate(self._steps) if s.step_id == after_step_id),
-                None,
-            )
-            if idx is None:
-                self._steps.append(new_step)
-            else:
-                self._steps.insert(idx + 1, new_step)
+        elif after_step_id and (idx := self._index_of(after_step_id)) is not None:
+            self._steps.insert(idx + 1, new_step)
         else:
             self._steps.append(new_step)
 

@@ -47,7 +47,7 @@ def _render_agent(agent: AgentContext) -> str:
 
 def _render_unmatched_capability(capability: str) -> str:
     return (
-        f"No agents found for capability '{capability}' "
+        f"No agents found for capability '{capability}'. "
         f"Consider rephrasing or planning without it."
     )
 

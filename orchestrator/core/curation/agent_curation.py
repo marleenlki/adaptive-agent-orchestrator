@@ -83,8 +83,8 @@ def run_agent_curation(
         task_analysis=session.task_analysis or "(no task analysis available)",
     )
 
-    result: CuratorOutput = llm.with_structured_output(CuratorOutput).invoke(prompt)
-    return result
+    return llm.with_structured_output(CuratorOutput).invoke(prompt)
+
 
 def apply_playbook_delta(
     agent_name: str,
@@ -125,9 +125,6 @@ def consolidate_playbook(
     if total_merges:
         logger.info("[consolidation] '%s' complete: %d merges", agent_name, total_merges)
     return total_merges
-
-
-
 
 
 def _merge_section(

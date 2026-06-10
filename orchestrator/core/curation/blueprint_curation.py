@@ -67,15 +67,14 @@ def _build_success_prompt(
         task=session.task,
         execution_timeline=_format_episode_timeline(session),
         total_delegations=len(session.history),
-        retrieved_blueprint=getattr(session, "retrieved_blueprint_text", "") or "(none)",
+        retrieved_blueprint=session.retrieved_blueprint_text or "(none)",
         available_agents=available_agents,
         judge_rejections=session.judge_rejections,
     )
 
 
 def _success_schema(known_agents: set[str]) -> type[SuccessCuratorOutput]:
-    """Build a SuccessCuratorOutput variant whose step.agent is restricted to known_agents
-    """
+    """Build a SuccessCuratorOutput variant whose step.agent is restricted to known_agents."""
     agent_type = Literal[tuple(sorted(known_agents))]  # type: ignore[valid-type]
     step = create_model(
         "ConstrainedBlueprintStep",
@@ -106,7 +105,7 @@ def _success_to_blueprint(raw: SuccessCuratorOutput, task_fallback: str) -> Blue
         task=raw.task.strip() or task_fallback,
         blueprint=blueprint,
         agents_involved=sorted({s.agent for s in steps}),
-        refines_retrieved=bool(getattr(raw, "refines_retrieved", False)),
+        refines_retrieved=raw.refines_retrieved,
     )
 
 

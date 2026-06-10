@@ -98,13 +98,7 @@ class AgentCallTracker:
         response: str,
         source: str = ORCHESTRATOR_DELEGATION_SOURCE,
     ) -> None:
-        """Record a delegation exchange.
-
-        Args:
-            agent_name: Name of the delegated agent.
-            message: The message/task sent to the agent.
-            response: The agent's response text.
-        """
+        """Record a delegation exchange."""
         rec = DelegationExchange(
             step_number=0,
             agent=agent_name,
@@ -137,12 +131,7 @@ class AgentCallTracker:
     # Archiving
 
     def reset(self, thread_id: str | None = None) -> None:
-        """Archive current records under *thread_id* and clear them.
-
-        For single-turn runs each thread_id is only reset once, so the
-        previous implementation's accumulation across multiple resets is
-        no longer needed.
-        """
+        """Archive current records under *thread_id* and clear them."""
         if thread_id is not None:
             self._history[thread_id] = list(self._records)
             self._timeline_history[thread_id] = list(self._timeline)
