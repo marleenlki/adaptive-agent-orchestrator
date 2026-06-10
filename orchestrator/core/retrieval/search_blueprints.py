@@ -15,7 +15,7 @@ def format_blueprint(record) -> str:
         return ""
 
     blueprint = record.blueprint
-    lines = [f'## Delegation Blueprint (proven pattern for "{record.task}")']
+    lines = [f'## Delegation Blueprint (workflow example from past episode: "{record.task}")']
 
     for i, step in enumerate(blueprint.steps):
         prefix = "  →" if i > 0 else "  "
@@ -25,7 +25,6 @@ def format_blueprint(record) -> str:
             f"      produces: {step.produces}"
         )
 
-    lines.append(f"\n  Rationale: {blueprint.rationale}")
     return "\n".join(lines)
 
 

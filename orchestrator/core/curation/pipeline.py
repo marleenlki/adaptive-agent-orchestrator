@@ -55,7 +55,7 @@ def finalize_episode(
         if not session.plan_store.goal:
             session.plan_store.goal = session.task
 
-        # Agents involved this episode (the judge isn't a real agent).
+        # Agents involved this episode
         agent_names = sorted({
             r.agent for r in session.history if r.agent != JUDGE_STEP_ID
         })
@@ -126,8 +126,18 @@ def _curate_episode(
     )
     logger.info("[episode_familiarity] similar_episodes=%d", familiarity)
     metrics.record_episode_familiarity(familiarity)
+    
+    # Judge-driven vote on the blueprint that drove this episode (if one did).
+    # Fires on success, failure, and familiar-skip alike — it costs no LLM call.
+    if session.retrieved_blueprint_id:
+        ctx.blueprint_store.record_outcome(session.retrieved_blueprint_id, success)
 
-    if familiarity >= EPISODE_FAMILIARITY_MIN_SEEN and success:
+    should_skip_curation = (
+        success
+        and familiarity >= EPISODE_FAMILIARITY_MIN_SEEN
+    )
+
+    if should_skip_curation:
         logger.info(
             "[blueprint_curation] Skipping — episode familiar (%d >= %d similar episodes)",
             familiarity, EPISODE_FAMILIARITY_MIN_SEEN,

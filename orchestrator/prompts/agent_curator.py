@@ -5,7 +5,7 @@ You are a learning engine that maintains a knowledge base about how to interact 
 
 You are reviewing all delegations to agent "{agent_name}" in a completed episode.
 
-## Agent Card (static description)
+## Agent Card (static description provided at registration time)
 {agent_note}
 
 ## How this agent was discovered
@@ -34,7 +34,7 @@ Analyze the delegations and produce a CuratorOutput (reflection + playbook_delta
 ### Reflection
 
 Compare what was EXPECTED (from the card description + existing playbook) vs. what ACTUALLY happened.
-Capture every learning the delegations reveal — both confirmations of existing bullets and genuinely
+Capture every learning the delegations reveal. This includes both confirmations of existing bullets and genuinely
 new behavior. A delegation that simply repeats what the card already states confirms existing
 knowledge; anything beyond that (capabilities, limitations, strategies not yet explicit) is worth recording.
 

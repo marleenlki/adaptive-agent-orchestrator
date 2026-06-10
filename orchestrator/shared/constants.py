@@ -66,6 +66,14 @@ RECURSION_LIMIT = 120
 MEMORY_SEARCH_MIN_SIMILARITY = 0.75
 """Minimum cosine similarity for memory retrieval (blueprints)."""
 
+# Memory — blueprints (delegation chains)
+
+BLUEPRINT_HARM_THRESHOLD = 2
+"""Auto-prune threshold for blueprints"""
+
+BLUEPRINT_CONFIRMATION_CAP = 5
+"""Maximum n_confirmed for a blueprint."""
+
 # Memory — playbooks (agent capability bullets)
 
 PLAYBOOK_HARM_THRESHOLD = 2

@@ -28,7 +28,7 @@ class BlueprintStepOutput(BaseModel):
 
 
 class SuccessCuratorOutput(BaseModel):
-    """LLM output for successful episodes — blueprint extraction."""
+    """LLM output for successful episodes."""
 
     task: str = Field(
         description=(
@@ -45,8 +45,14 @@ class SuccessCuratorOutput(BaseModel):
             "Describe data flow between steps via receives/produces."
         ),
     )
-    rationale: str = Field(
-        description="Why this sequence is optimal — 1-2 sentences.",
+    refines_retrieved: bool = Field(
+        default=False,
+        description=(
+            "Set true ONLY if a Retrieved Blueprint was shown AND your ideal "
+            "chain is an improved/corrected version of it for the SAME task "
+            "family. Set false if no blueprint was retrieved or your chain solves a genuinely different "
+            "task. It will be stored as a new blueprint."
+        ),
     )
 
 

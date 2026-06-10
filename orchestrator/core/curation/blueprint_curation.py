@@ -74,11 +74,7 @@ def _build_success_prompt(
 
 
 def _success_schema(known_agents: set[str]) -> type[SuccessCuratorOutput]:
-    """Build a SuccessCuratorOutput variant whose step.agent is restricted to
-    ``known_agents``.
-
-    Putting the valid names into the schema as a Literal/enum makes the LLM
-    emit only real agents, so no post-hoc name resolution is needed.
+    """Build a SuccessCuratorOutput variant whose step.agent is restricted to known_agents
     """
     agent_type = Literal[tuple(sorted(known_agents))]  # type: ignore[valid-type]
     step = create_model(
@@ -105,15 +101,14 @@ def _success_to_blueprint(raw: SuccessCuratorOutput, task_fallback: str) -> Blue
         for step in raw.ideal_steps
         if step.agent != JUDGE_STEP_ID
     ]
-    blueprint = DelegationBlueprint(steps=steps, rationale=raw.rationale)
+    blueprint = DelegationBlueprint(steps=steps)
     return BlueprintRecord(
         task=raw.task.strip() or task_fallback,
         blueprint=blueprint,
         agents_involved=sorted({s.agent for s in steps}),
+        refines_retrieved=bool(getattr(raw, "refines_retrieved", False)),
     )
 
-
-# --- Episode-timeline rendering (for the curator prompt) ---
 
 def _format_episode_timeline(session: "OrchestratorSession") -> str:
     blocks: list[str] = []

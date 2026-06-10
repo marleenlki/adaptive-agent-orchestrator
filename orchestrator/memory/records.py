@@ -195,7 +195,6 @@ class DelegationBlueprint:
     """An ideal, minimal agent chain for a task type."""
 
     steps: list[DelegationStep]
-    rationale: str   # Why this sequence is optimal
 
 
 
@@ -208,3 +207,4 @@ class BlueprintRecord:
     agents_involved: list[str] = field(default_factory=list)
     task_embedding: list[float] = field(default_factory=list)
     blueprint_id: str = ""  # DB UUID, populated on retrieval for tracking
+    refines_retrieved: bool = False  # curator signal: UPDATE the retrieved blueprint vs INSERT new

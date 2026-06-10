@@ -25,7 +25,7 @@ What tasks would logically require this agent that are NOT directly \
 stated in the card? Generate queries for those too.
 
 **Rules:**
-1. Each query is a natural user request (1–2 sentences).
+1. Each query is a natural user request (1-2 sentences).
 2. Use diverse wording: vary verbs, nouns, domains, and phrasing styles. \
 Rephrase capabilities using synonyms the card does NOT use.
 3. Include edge-case / niche tasks the agent could handle.

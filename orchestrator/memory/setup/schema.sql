@@ -33,15 +33,9 @@ CREATE INDEX IF NOT EXISTS idx_delegation_blueprint_embedding
     ON delegation_blueprint USING hnsw (task_embedding vector_cosine_ops);
 
 ALTER TABLE delegation_blueprint
-    DROP COLUMN IF EXISTS task_type;
+    ADD COLUMN IF NOT EXISTS n_confirmed INTEGER NOT NULL DEFAULT 1;
 ALTER TABLE delegation_blueprint
-    DROP COLUMN IF EXISTS outcome;
-ALTER TABLE delegation_blueprint
-    DROP COLUMN IF EXISTS n_retrieved;
-ALTER TABLE delegation_blueprint
-    DROP COLUMN IF EXISTS n_retrieved_success;
-ALTER TABLE delegation_blueprint
-    DROP COLUMN IF EXISTS n_retrieved_failure;
+    ADD COLUMN IF NOT EXISTS n_contradicted INTEGER NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS delegation_blueprint_step (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),

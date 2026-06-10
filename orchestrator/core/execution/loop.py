@@ -11,7 +11,6 @@ from langgraph.errors import GraphRecursionError
 
 from orchestrator.core.execution.graph import build_executor_agent
 from orchestrator.prompts.executor import (
-    BASELINE_PROMPT,
     EXECUTOR_PROMPT,
 )
 from orchestrator.core.session_types import OrchestratorSession
@@ -26,7 +25,7 @@ def run_executor(session: OrchestratorSession, task: str) -> str:
     ctx = session.ctx
     tools = build_tools(session=session)
 
-    prompt = (BASELINE_PROMPT if not ctx.enable_planning else EXECUTOR_PROMPT).format(task=task)
+    prompt = EXECUTOR_PROMPT.format(task=task)
 
     agent, config = build_executor_agent(
         llm=ctx.llm,

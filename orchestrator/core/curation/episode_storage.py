@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from orchestrator.memory.records import StoredEpisodeStep, StoredEpisode
 from orchestrator.memory.pg_helpers import embed_text
+from orchestrator.memory.stores.blueprint_store import PostgresBlueprintStore
 from orchestrator.shared.constants import JUDGE_STEP_ID
 
 if TYPE_CHECKING:
@@ -46,14 +47,23 @@ def store_episode_memory(
 
 def store_episode_result(
     episode_store,
-    blueprint_store,
+    blueprint_store: "PostgresBlueprintStore | None",
     session: "OrchestratorSession",
     result: "BlueprintRecord",
     success: bool,
 ) -> None:
     """Persist the episode result: stored episode (on success) and blueprint."""
     if success and episode_store is not None:
-        store_episode_memory(episode_store, session)
+        store_episode_memory(episode_store, session) # only successful episodes are stored in memory 
 
-    if blueprint_store is not None:
-        blueprint_store.add(result)
+    if blueprint_store is None:
+        return
+
+    # Refine the retrieved blueprint in place when the curator flagged it as an
+    # improvement of that same pattern; otherwise store a fresh candidate.
+    # update_blueprint returns False if that blueprint was meanwhile pruned —
+    # then fall through to add() so the refinement is not lost.
+    if result.refines_retrieved and session.retrieved_blueprint_id:
+        if blueprint_store.update_blueprint(session.retrieved_blueprint_id, result):
+            return
+    blueprint_store.add(result)
