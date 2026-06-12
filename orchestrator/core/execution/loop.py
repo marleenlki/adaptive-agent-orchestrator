@@ -1,7 +1,4 @@
-"""Executor ReAct agent that handles the full orchestration
-lifecycle: context retrieval, optional planning, delegation,
-adaptation, and completion.
-"""
+"""Executor ReAct agent that executes and adapts the upfront plan."""
 
 from __future__ import annotations
 
@@ -13,6 +10,7 @@ from orchestrator.core.execution.graph import build_executor_agent
 from orchestrator.prompts.executor import EXECUTOR_PROMPT
 from orchestrator.core.session_types import OrchestratorSession
 from orchestrator.core.execution.tools.build import build_tools
+from orchestrator.core.execution.tools.planning import render_plan
 from orchestrator.shared.constants import RECURSION_LIMIT
 
 logger = logging.getLogger(__name__)
@@ -21,9 +19,14 @@ logger = logging.getLogger(__name__)
 def run_executor(session: OrchestratorSession, task: str) -> str:
     """Build a ReAct agent, invoke it with *task*, return the final answer."""
     ctx = session.ctx
-    tools = build_tools(session=session)
+    tools = build_tools(session=session, include_create_plan=False)
 
-    prompt = EXECUTOR_PROMPT.format(task=task)
+    plan_context = (
+        render_plan(session.plan_store)
+        if session.plan_store.steps
+        else "No upfront plan was produced. Execute reactively from the task."
+    )
+    prompt = EXECUTOR_PROMPT.format(task=task, plan_context=plan_context)
 
     agent, config = build_executor_agent(
         llm=ctx.llm,

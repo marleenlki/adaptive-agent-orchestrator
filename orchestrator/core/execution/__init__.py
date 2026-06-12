@@ -1,1 +1,1 @@
-"""Execution layer — executor loop, plan state, formatting, and replanning."""
+"""Execution layer — upfront planner, executor loop, plan state, and replanning."""

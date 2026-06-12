@@ -11,6 +11,7 @@ from langchain_core.language_models import BaseChatModel
 
 from orchestrator.core.execution.plan_store import AdaptivePlanStore
 from orchestrator.core.execution.loop import run_executor
+from orchestrator.core.execution.planner import run_planner
 from orchestrator.core.curation.pipeline import finalize_episode
 from orchestrator.core.resources import OrchestratorResources
 from orchestrator.core.session_types import OrchestratorSession
@@ -140,6 +141,8 @@ class AdaptiveOrchestrator:
             metrics._usage_cb = usage_cb
             metrics._embedder = self._ctx.embedder
 
+            if self._ctx.enable_planning:
+                run_planner(session, task)
             answer = run_executor(session, task)
 
             self.call_tracker.record_message("orchestrator", answer)

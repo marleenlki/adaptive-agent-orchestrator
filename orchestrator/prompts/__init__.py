@@ -12,6 +12,9 @@ from orchestrator.prompts.playbook_consolidation import (
 from orchestrator.prompts.executor import (
     EXECUTOR_PROMPT,
 )
+from orchestrator.prompts.planner import (
+    PLANNER_PROMPT,
+)
 from orchestrator.prompts.agent_curator import (
     AGENT_CURATOR_PROMPT,
 )
@@ -21,5 +24,6 @@ __all__ = [
     "VERIFICATION_GATE_PROMPT",
     "EPISODE_CURATOR_SUCCESS_PROMPT",
     "EXECUTOR_PROMPT",
+    "PLANNER_PROMPT",
     "PLAYBOOK_MERGE_PROMPT",
 ]

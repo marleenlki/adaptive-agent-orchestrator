@@ -1,9 +1,9 @@
 """Pydantic schemas for the adaptive orchestrator.
 
 Architecture:
-  A single unified ReAct agent handles the full orchestration lifecycle:
-  context gathering, planning, delegation, adaptation, and completion.
-  An answer judge validates the final answer before returning.
+  An upfront planner retrieves context and creates an execution plan.
+  The executor uses that plan as a basis for delegation, adaptation, and
+  completion. An answer judge validates the final answer before returning.
 """
 
 from __future__ import annotations
@@ -79,8 +79,8 @@ class PlanContext(BaseModel):
 class PlanStep(BaseModel):
     """One step in the execution plan — a scratchpad for the orchestrator's thinking.
 
-    Fields are free-form notes. The plan does not drive delegation;
-    the executor delegates freely and updates steps to track progress.
+    Fields are free-form notes. The upfront plan guides delegation, but
+    the executor can still adapt and update steps as observations arrive.
     """
 
     step_id: str = Field(description="Unique step identifier (e.g. 's1', 's2').")

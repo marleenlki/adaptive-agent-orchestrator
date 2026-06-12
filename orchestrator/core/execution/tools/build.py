@@ -16,11 +16,12 @@ if TYPE_CHECKING:
 def build_tools(
     *,
     session: "OrchestratorSession",
+    include_create_plan: bool = True,
 ) -> list:
     """Create all tools for the executor agent."""
     tools = [
         make_gather_context(session),
-        *make_planning_tools(session),
+        *make_planning_tools(session, include_create_plan=include_create_plan),
         make_delegate(session),
         make_task_complete(session),
     ]

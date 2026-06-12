@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 _STEP_NOT_FOUND = "Error: step '{}' not found in plan."
 
 
-def _render_plan(plan_store: "AdaptivePlanStore") -> str:
+def render_plan(plan_store: "AdaptivePlanStore") -> str:
     if not plan_store.steps:
         return "Plan is empty."
 
@@ -54,7 +54,11 @@ def _render_plan(plan_store: "AdaptivePlanStore") -> str:
     return "\n".join(header) + "\n\n" + body
 
 
-def make_planning_tools(session: "OrchestratorSession") -> list:
+def make_planning_tools(
+    session: "OrchestratorSession",
+    *,
+    include_create_plan: bool = True,
+) -> list:
     """Build planning tools"""
     plan_store = session.plan_store
 
@@ -70,7 +74,7 @@ def make_planning_tools(session: "OrchestratorSession") -> list:
         """
 
         plan_store.load_plan(plan)
-        result = _render_plan(plan_store)
+        result = render_plan(plan_store)
 
         session.timeline.append(ToolCallRecord(
             tool_name="create_plan",
@@ -165,8 +169,8 @@ def make_planning_tools(session: "OrchestratorSession") -> list:
         Works for both explicit plans and ad-hoc delegation tracking.
         """
         if not plan_store.steps:
-            return "No plan exists. Use create_plan() or delegate directly."
-        result = _render_plan(plan_store)
+            return "No plan exists. Add a focused step or delegate directly."
+        result = render_plan(plan_store)
         session.timeline.append(ToolCallRecord(
             tool_name="view_plan",
             tool_input="",
@@ -174,4 +178,7 @@ def make_planning_tools(session: "OrchestratorSession") -> list:
         ))
         return result
 
-    return [create_plan, update_step, add_step, view_plan]
+    tools = [update_step, add_step, view_plan]
+    if include_create_plan:
+        tools.insert(0, create_plan)
+    return tools
