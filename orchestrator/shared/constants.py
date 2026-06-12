@@ -8,11 +8,8 @@ defining their own magic numbers.
 from enum import StrEnum
 
 # Agent Scoring
-HYBRID_ALPHA = 0.85
-"""Weight for embedding similarity in hybrid scoring."""
-
 AGENT_SEARCH_MIN_SCORE = 0.75
-"""Minimum hybrid similarity for agent search (card and capability)."""
+"""Minimum cosine similarity for agent search (card and capability)."""
 
 AGENT_SEARCH_TOP_K = 3
 """Maximum agents returned per capability."""

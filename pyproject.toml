@@ -9,17 +9,17 @@ description = "LangChain-based orchestrator with agent delegation."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "a2a-sdk>=0.2.0",
-  "langchain>=1.2.0",
-  "langchain-core>=0.2.0",
-  "langchain-openai>=0.3.0",
-  "langgraph>=0.2.0",
+    "a2a-sdk>=0.2.0",
+    "langchain>=1.2.0",
+    "langchain-core>=0.2.0",
+    "langchain-openai>=0.3.0",
+    "langgraph>=0.2.0",
     "openai>=1.0.0",
     "together>=1.0.0",
     "python-dotenv>=1.0.0",
     "tiktoken>=0.12.0",
+    "numpy>=2.0.0",
     "psycopg[binary,pool]>=3.1.0",
-    "rank-bm25>=0.2.2",
 ]
 
 [tool.setuptools.packages.find]

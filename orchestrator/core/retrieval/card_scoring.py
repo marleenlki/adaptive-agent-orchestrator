@@ -1,16 +1,13 @@
-"""Hybrid scoring for registered agent cards."""
+"""Cosine-similarity scoring for registered agent cards."""
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
-from rank_bm25 import BM25Okapi
 
 from orchestrator.memory.pg_helpers import embed_text
-from orchestrator.shared.constants import HYBRID_ALPHA
 
 if TYPE_CHECKING:
     from orchestrator.shared.embedder import Embedder
@@ -33,7 +30,7 @@ def score_agents_by_card(
     embedder: "Embedder | None",
     query_embedding: list[float] | None = None,
 ) -> list[AgentCardScore]:
-    """Score agents by hybrid similarity against their card text."""
+    """Score agents by cosine similarity against their card text."""
     query_emb = (
         list(query_embedding)
         if query_embedding is not None and len(query_embedding) > 0
@@ -43,27 +40,24 @@ def score_agents_by_card(
         return [AgentCardScore(name=c.get("name", ""), score=0.0) for c in agent_cards]
 
     query_vec = np.array(query_emb, dtype=np.float32)
-    card_texts = [_card_text(c) for c in agent_cards]
     scored: list[AgentCardScore] = []
 
-    for card, text, bm25_score in zip(
-        agent_cards,
-        card_texts,
-        _bm25_scores(query, card_texts),
-    ):
+    for card in agent_cards:
         name = card.get("name", "")
+        text = _card_text(card)
         card_emb = _cached_embed(
             name,
             text,
             embedder,
             precomputed_embedding=card.get("card_embedding"),
         )
-        cosine_sim = (
-            max(0.0, float(np.dot(query_vec, np.array(card_emb, dtype=np.float32))))
-            if card_emb else 0.0
+        card_vec = np.array(card_emb, dtype=np.float32) if card_emb else None
+        scored.append(
+            AgentCardScore(
+                name=name,
+                score=_cosine_similarity(query_vec, card_vec),
+            ),
         )
-        score = HYBRID_ALPHA * cosine_sim + (1.0 - HYBRID_ALPHA) * bm25_score
-        scored.append(AgentCardScore(name=name, score=score))
 
     return sorted(scored, key=lambda e: e.score, reverse=True)
 
@@ -100,19 +94,17 @@ def _cached_embed(
     return embedding
 
 
-def _tokenize(text: str) -> list[str]:
-    return re.findall(r"\w+", text.lower())
+def _cosine_similarity(
+    query_vec: np.ndarray,
+    card_vec: np.ndarray | None,
+) -> float:
+    if card_vec is None or query_vec.size == 0 or card_vec.size == 0:
+        return 0.0
+    if query_vec.shape != card_vec.shape:
+        return 0.0
 
+    denominator = float(np.linalg.norm(query_vec) * np.linalg.norm(card_vec))
+    if denominator <= 0.0:
+        return 0.0
 
-def _bm25_scores(query: str, candidates: list[str]) -> list[float]:
-    query_tokens = _tokenize(query)
-    if not candidates or not query_tokens:
-        return [0.0] * len(candidates)
-
-    bm25 = BM25Okapi([_tokenize(doc) for doc in candidates])
-    raw = bm25.get_scores(query_tokens)
-
-    max_score = float(max(raw)) if len(raw) > 0 else 0.0
-    if max_score <= 0.0:
-        return [0.0] * len(candidates)
-    return [float(s) / max_score for s in raw]
+    return max(0.0, min(1.0, float(np.dot(query_vec, card_vec) / denominator)))
