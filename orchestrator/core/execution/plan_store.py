@@ -17,10 +17,9 @@ class AdaptivePlanStore:
         self._step_counter: int = 0
 
     def load_plan(self, plan: Plan) -> None:
-        """Replace the plan, keeping already completed/failed steps."""
-        completed = [s for s in self._steps if s.status in (StepStatus.DONE, StepStatus.FAILED)]
-
-        self._steps = completed
+        """Replace the current plan with a complete new plan."""
+        self._steps = []
+        self._step_counter = 0
         for step in plan.steps:
             step.step_id = self._next_step_id()
             self._steps.append(step)
@@ -28,10 +27,7 @@ class AdaptivePlanStore:
         self.goal = plan.goal
         self.deliverables = list(plan.deliverables)
 
-        logger.info(
-            "Plan loaded: %d new steps (+%d completed preserved)",
-            len(plan.steps), len(completed),
-        )
+        logger.info("Plan loaded: %d steps", len(plan.steps))
 
     @property
     def steps(self) -> list[PlanStep]:

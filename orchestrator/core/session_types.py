@@ -119,6 +119,43 @@ class Plan(BaseModel):
     )
 
 
+class PlanDetectorDecision(BaseModel):
+    """Structured decision returned by the plan detector."""
+
+    reasoning: str = Field(
+        description=(
+            "Brief analysis of whether the plan covers all important task "
+            "requirements, numbers, nouns, and constraints, and whether any "
+            "steps duplicate the same information or requirement."
+        ),
+    )
+    satisfies_completeness: bool = Field(
+        description=(
+            "Whether every key element and requirement from the original task "
+            "is addressed by at least one plan step."
+        ),
+    )
+    satisfies_non_redundancy: bool = Field(
+        description=(
+            "Whether the plan avoids duplicated or irrelevant subtasks."
+        ),
+    )
+    suggestions: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Concrete edits needed to make the plan complete and non-redundant. "
+            "Leave empty when the plan needs no change."
+        ),
+    )
+    refined_plan: Plan | None = Field(
+        default=None,
+        description=(
+            "Full replacement plan when suggestions are needed. Leave null when "
+            "the plan satisfies completeness and non-redundancy."
+        ),
+    )
+
+
 class ToolCallRecord(BaseModel):
     """One internal orchestrator tool call (gather_context, create_plan, etc.)."""
 
@@ -184,7 +221,7 @@ class OrchestratorSession(BaseModel):
     context_gathered: bool = False
     task_analysis: str = ""
     judge_task_summary: str = ""
-    # Agent discovery — persisted across plan/replan cycles
+    # Agent discovery — persisted across planning/refinement phases
     seen_agents: set[str] = Field(default_factory=set)
     agent_matched_capabilities: dict[str, list[str]] = Field(
         default_factory=dict,
